@@ -6,9 +6,18 @@ describe("json2019", () => {
   describe("#stringify()", () => {
     const arrayOfPrimitiveBooleans = [true, false];
 
-    const arrayOfPrimitiveStrings = ["", "a", "10", "true", "{}"];
+    const arrayOfPrimitiveStrings = ["", "a", "10", "true", "{}", " "];
 
-    const arrayOfPrimitiveNumbers = [-10, 0, 3.3, 10];
+    const arrayOfPrimitiveNumbers = [
+      Number.MIN_VALUE,
+      Number.MIN_SAFE_INTEGER,
+      -10,
+      0,
+      3.3,
+      10,
+      Number.MAX_SAFE_INTEGER,
+      Number.MAX_VALUE
+    ];
 
     const arrayOfPrimitives = [
       ...arrayOfPrimitiveBooleans,
@@ -138,6 +147,10 @@ describe("json2019", () => {
 
       it("should omit empty values", () => {
         expectValuesMatch(makeObject(arrayOfEmptyValues));
+      });
+
+      it("should handle object containing non-finite numbers", () => {
+        expectValuesMatch(makeObject(arrayOfNonFiniteNumbers));
       });
 
       it("should handle structural data as values", () => {
