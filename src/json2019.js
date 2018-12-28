@@ -29,7 +29,7 @@ function stringify(obj, context = contexts.topLevel, key = "") {
     [() => objType === "boolean", stringifyBoolean],
     [
       () => ["function", "symbol", "undefined"].includes(objType),
-      (_, context) => (context === contexts.topLevel ? undefined : "null")
+      stringifyEmptyValue
     ]
   ].find(([condition]) => condition())[1](obj, context, key);
 }
@@ -63,4 +63,8 @@ function stringifyString(str) {
 
 function stringifyBoolean(bool) {
   return bool.toString();
+}
+
+function stringifyEmptyValue(_, context) {
+  return context === contexts.topLevel ? undefined : "null";
 }
