@@ -5,22 +5,71 @@ const json2019 = require("../src/json2019");
 describe("json2019", () => {
   describe("#stringify()", () => {
     const stringify = json2019.stringify.bind(json2019);
+
     const jsonStringify = JSON.stringify.bind(JSON);
+
+    const arrayOfPrimitiveBooleans = [true, false];
+
+    const arrayOfPrimitiveStrings = ["", "a", "10", "true", "{}"];
+
+    const arrayOfPrimitiveNumbers = [-10, 0, 3.3, 10];
+
+    const arrayOfEmptyValues = [undefined, Symbol.for("symbol"), function() {}];
+
+    const arrayOfNonFiniteNumbers = [-Infinity, NaN, Infinity];
+
     describe("pure values", () => {
+      it("should handle null", () => {
+        expectValuesMatch(null);
+      });
+
       it("should handle boolean correctly", () => {
-        checkArray([true, false]);
+        checkArray(arrayOfPrimitiveBooleans);
       });
 
       it("should handle string correctly", () => {
-        checkArray(["", "a", "10", "true", "{}"]);
+        checkArray(arrayOfPrimitiveStrings);
       });
 
-      it("should handle numbers correctly", () => {
-        checkArray([-10, 0, 3.3, 10]);
+      it("should handle finite numbers correctly", () => {
+        checkArray(arrayOfPrimitiveNumbers);
       });
 
-      it("should return undefined in case undefined, Symbol or Function was passed", () => {
-        checkArray([undefined, Symbol.for(""), function() {}]);
+      it("should handle infinite numbers correctly", () => {
+        checkArray(arrayOfNonFiniteNumbers);
+      });
+
+      it("should return undefined in case of empty value(undefined, Symbol or Function) was passed", () => {
+        checkArray(arrayOfEmptyValues);
+      });
+
+      it("should handle date correctly", () => {
+        expectValuesMatch(new Date(2006, 0, 2, 15, 4, 5));
+      });
+    });
+    describe("array values", () => {
+      it("should handle empty arrays", () => {
+        expectValuesMatch([]);
+      });
+
+      it("should handle array containing null", () => {
+        expectValuesMatch([null]);
+      });
+
+      it("should handle arrays made of primitive values correctly", () => {
+        expectValuesMatch([
+          ...arrayOfPrimitiveBooleans,
+          ...arrayOfPrimitiveNumbers,
+          ...arrayOfPrimitiveStrings
+        ]);
+      });
+
+      it("should censor empty value (undefined, Function or Symbol) to null", () => {
+        expectValuesMatch(arrayOfEmptyValues);
+      });
+
+      it("should replace infinite numbers with null", () => {
+        expectValuesMatch(arrayOfNonFiniteNumbers);
       });
     });
     it("should handle empty object correctly", function() {
@@ -35,40 +84,10 @@ describe("json2019", () => {
       expect(stringify(value)).to.equal(jsonStringify(value));
     }
 
-    it("should handle empty arrays", function() {
-      expect(json2019.stringify([])).to.equal("[]");
-    });
-
-    it("should handle non-empty arrays", function() {
-      expect(json2019.stringify(["aaa", false, true, 1, 1.3, {}])).to.equal(
-        '["aaa",false,true,1,1.3,{}]'
-      );
-    });
-
-    it("should handle undefined, a Function, or a Symbol in array correctly: by censoring to null", function() {
-      expect(
-        json2019.stringify([undefined, function() {}, Symbol.for("aaa")])
-      ).to.equal("[null,null,null]");
-    });
-
-    it("should handle The numbers Infinity and NaN, as well as the value null correctly: by returning null ", function() {
-      expect(json2019.stringify(null)).to.equal("null");
-      expect(json2019.stringify(NaN)).to.equal("null");
-      expect(json2019.stringify(Infinity)).to.equal("null");
-      expect(json2019.stringify([null, NaN, Infinity])).to.equals(
-        "[null,null,null]"
-      );
-    });
-
     it("should handle non empty objects correctly: convert enumerable props to string", function() {
       expect(json2019.stringify({ a: "a", b: 10, c: true })).to.equal(
         '{"a":"a","b":10,"c":true}'
       );
-    });
-
-    it("should handle date correctly: same as string", function() {
-      const date = new Date(2006, 0, 2, 15, 4, 5);
-      expect(json2019.stringify(date)).to.equal(JSON.stringify(date));
     });
 
     it("should handle Map, Set, WeakMap, WeakSet", function() {
