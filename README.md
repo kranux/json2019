@@ -1,4 +1,12 @@
 # json2019
 
-Project created just for deepen my JavaScript / EcmaScript knowledge and improving my TDD skills, not for practical use.
+Project I created in order to deepen my JavaScript / EcmaScript knowledge and improve my TDD skills.
 
+Not intended for any practical use.
+
+## Quick start
+
+```bash
+nvm use
+npm i
+```
