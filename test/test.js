@@ -15,11 +15,11 @@ describe("json2019", function() {
     });
 
     it("should handle strings correctly", function() {
-      expect(json2019.stringify("")).to.equal("");
-      expect(json2019.stringify("a")).to.equal("a");
-      expect(json2019.stringify("10")).to.equal("10");
-      expect(json2019.stringify("true")).to.equal("true");
-      expect(json2019.stringify("{}")).to.equal("{}");
+      expect(json2019.stringify("")).to.equal('""');
+      expect(json2019.stringify("a")).to.equal('"a"');
+      expect(json2019.stringify("10")).to.equal('"10"');
+      expect(json2019.stringify("true")).to.equal('"true"');
+      expect(json2019.stringify("{}")).to.equal('"{}"');
     });
 
     it("should handle numbers correctly", function() {
@@ -35,7 +35,7 @@ describe("json2019", function() {
 
     it("should handle non-empty arrays", function() {
       expect(json2019.stringify(["aaa", false, true, 1, 1.3, {}])).to.equal(
-        "['aaa',false,true,1,1.3,{}]"
+        '["aaa",false,true,1,1.3,{}]'
       );
     });
 
@@ -59,6 +59,12 @@ describe("json2019", function() {
       expect(json2019.stringify(Infinity)).to.equal("null");
       expect(json2019.stringify([null, NaN, Infinity])).to.equals(
         "[null,null,null]"
+      );
+    });
+
+    it("should handle non empty objects correctly", function() {
+      expect(json2019.stringify({ a: "a", b: 10, c: true })).to.equal(
+        '{"a":"a","b":10,"c":true}'
       );
     });
   });

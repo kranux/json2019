@@ -21,7 +21,7 @@ function stringify(obj, context = contexts.topLevel) {
   } else if (objType === "object") {
     return stringifyObject(obj);
   } else if (objType === "string") {
-    return context === contexts.topLevel ? obj : `'${obj}'`;
+    return `"${obj}"`;
   } else if (objType === "number") {
     return stringifyNumber(obj);
   } else if (objType === "boolean") {
@@ -34,8 +34,12 @@ function stringify(obj, context = contexts.topLevel) {
 function stringifyObject(obj) {
   if (obj === null) {
     return "null";
-  } else if (Object.keys(obj).length === 0) {
-    return "{}";
+  } else {
+    return `{${Object.keys(obj)
+      .map(key => {
+        return `"${key}":${stringify(obj[key], contexts.object)}`;
+      })
+      .join(",")}}`;
   }
 }
 
