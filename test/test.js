@@ -72,5 +72,16 @@ describe("json2019", function() {
       const date = new Date(2006, 0, 2, 15, 4, 5);
       expect(json2019.stringify(date)).to.equal(JSON.stringify(date));
     });
+
+    it("should handle Map, Set, WeakMap", function() {
+      expect(
+        json2019.stringify([
+          new Set([1]),
+          new Map([[1, 2]]),
+          new WeakSet([{ a: 1 }]),
+          new WeakMap([[{ a: 1 }, 2]])
+        ])
+      ).to.equal("[{},{},{},{}]");
+    });
   });
 });
