@@ -38,5 +38,19 @@ describe("json2019", function() {
         "['aaa',false,true,1,1.3,{}]"
       );
     });
+
+    it("should handle undefined, a Function, or a Symbol in array correctly: by censoring to null", function() {
+      expect(
+        json2019.stringify([undefined, function() {}, Symbol.for("aaa")])
+      ).to.equal("[null,null,null]");
+    });
+
+    it("should handle undefined, a Function, or a Symbol as pure values correctly: by returning undefined", function() {
+      expect(json2019.stringify(undefined)).to.equal("undefined");
+      expect(json2019.stringify(Symbol.for("true"))).to.equal("undefined");
+      expect(json2019.stringify(Symbol.for(function() {}))).to.equal(
+        "undefined"
+      );
+    });
   });
 });
