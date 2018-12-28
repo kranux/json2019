@@ -18,10 +18,12 @@ function stringify(obj, context = contexts.topLevel) {
   const objType = typeof obj;
   if (Array.isArray(obj)) {
     return stringifyArray(obj);
+  } else if (obj instanceof Date) {
+    return stringifyString(obj.toISOString());
+  } else if (objType === "string") {
+    return stringifyString(obj);
   } else if (objType === "object") {
     return stringifyObject(obj);
-  } else if (objType === "string") {
-    return `"${obj}"`;
   } else if (objType === "number") {
     return stringifyNumber(obj);
   } else if (objType === "boolean") {
@@ -47,4 +49,8 @@ function stringifyArray(obj) {
 
 function stringifyNumber(obj) {
   return Number.isFinite(obj) ? obj.toString() : "null";
+}
+
+function stringifyString(str) {
+  return `"${str.toString()}"`;
 }

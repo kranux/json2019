@@ -62,10 +62,15 @@ describe("json2019", function() {
       );
     });
 
-    it("should handle non empty objects correctly", function() {
+    it("should handle non empty objects correctly: convert enumerable props to string", function() {
       expect(json2019.stringify({ a: "a", b: 10, c: true })).to.equal(
         '{"a":"a","b":10,"c":true}'
       );
+    });
+
+    it("should handle date correctly: same as string", function() {
+      const date = new Date(2006, 0, 2, 15, 4, 5);
+      expect(json2019.stringify(date)).to.equal(JSON.stringify(date));
     });
   });
 });
