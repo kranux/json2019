@@ -36,9 +36,7 @@ function stringifyObject(obj) {
     return "null";
   } else {
     return `{${Object.keys(obj)
-      .map(key => {
-        return `"${key}":${stringify(obj[key], contexts.object)}`;
-      })
+      .map(key => `"${key}":${stringify(obj[key], contexts.object)}`)
       .join(",")}}`;
   }
 }
