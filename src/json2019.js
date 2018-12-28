@@ -28,8 +28,8 @@ function stringify(obj, context = contexts.topLevel, key = "") {
     [() => objType === "number", stringifyNumber],
     [() => objType === "boolean", stringifyBoolean],
     [
-      () => obj === undefined || ["function", "symbol"].includes(objType),
-      (_, context) => (context === contexts.topLevel ? "undefined" : "null")
+      () => ["function", "symbol", "undefined"].includes(objType),
+      (_, context) => (context === contexts.topLevel ? undefined : "null")
     ]
   ].find(([condition]) => condition())[1](obj, context, key);
 }

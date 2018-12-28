@@ -1,33 +1,39 @@
-var assert = require("assert");
-var expect = require("chai").expect;
+const expect = require("chai").expect;
 
 const json2019 = require("../src/json2019");
 
-describe("json2019", function() {
-  describe("#stringify()", function() {
+describe("json2019", () => {
+  describe("#stringify()", () => {
+    const stringify = json2019.stringify.bind(json2019);
+    const jsonStringify = JSON.stringify.bind(JSON);
+    describe("pure values", () => {
+      it("should handle boolean correctly", () => {
+        checkArray([true, false]);
+      });
+
+      it("should handle string correctly", () => {
+        checkArray(["", "a", "10", "true", "{}"]);
+      });
+
+      it("should handle numbers correctly", () => {
+        checkArray([-10, 0, 3.3, 10]);
+      });
+
+      it("should return undefined in case undefined, Symbol or Function was passed", () => {
+        checkArray([undefined, Symbol.for(""), function() {}]);
+      });
+    });
     it("should handle empty object correctly", function() {
       expect(json2019.stringify({})).to.equal("{}");
     });
 
-    it("should handle booleans correctly", function() {
-      expect(json2019.stringify(true)).to.equal("true");
-      expect(json2019.stringify(false)).to.equal("false");
-    });
+    function checkArray(array) {
+      array.forEach(expectValuesMatch);
+    }
 
-    it("should handle strings correctly", function() {
-      expect(json2019.stringify("")).to.equal('""');
-      expect(json2019.stringify("a")).to.equal('"a"');
-      expect(json2019.stringify("10")).to.equal('"10"');
-      expect(json2019.stringify("true")).to.equal('"true"');
-      expect(json2019.stringify("{}")).to.equal('"{}"');
-    });
-
-    it("should handle numbers correctly", function() {
-      expect(json2019.stringify(0)).to.equal("0");
-      expect(json2019.stringify(10)).to.equal("10");
-      expect(json2019.stringify(-10)).to.equal("-10");
-      expect(json2019.stringify(3.3)).to.equal("3.3");
-    });
+    function expectValuesMatch(value) {
+      expect(stringify(value)).to.equal(jsonStringify(value));
+    }
 
     it("should handle empty arrays", function() {
       expect(json2019.stringify([])).to.equal("[]");
@@ -43,14 +49,6 @@ describe("json2019", function() {
       expect(
         json2019.stringify([undefined, function() {}, Symbol.for("aaa")])
       ).to.equal("[null,null,null]");
-    });
-
-    it("should handle undefined, a Function, or a Symbol as pure values correctly: by returning undefined", function() {
-      expect(json2019.stringify(undefined)).to.equal("undefined");
-      expect(json2019.stringify(Symbol.for("true"))).to.equal("undefined");
-      expect(json2019.stringify(Symbol.for(function() {}))).to.equal(
-        "undefined"
-      );
     });
 
     it("should handle The numbers Infinity and NaN, as well as the value null correctly: by returning null ", function() {
