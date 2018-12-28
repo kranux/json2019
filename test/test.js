@@ -16,6 +16,31 @@ describe("json2019", () => {
       ...arrayOfPrimitiveStrings
     ];
 
+    const arrayOfPrimitiveWrappers = [
+      new Number(3),
+      new String("false"),
+      new Boolean(false)
+    ];
+
+    const arrayOfStructuralDataTypes = [
+      new Set([1]),
+      new Map([[1, 2]]),
+      new WeakSet([{ a: 1 }]),
+      new WeakMap([[{ a: 1 }, 2]])
+    ];
+
+    const arrayOfTypedArrays = [
+      new Int8Array([1]),
+      new Int16Array([1]),
+      new Int32Array([1]),
+      new Uint8Array([1]),
+      new Uint8ClampedArray([1]),
+      new Uint16Array([1]),
+      new Uint32Array([1]),
+      new Float32Array([1]),
+      new Float64Array([1])
+    ];
+
     const arrayOfEmptyValues = [undefined, Symbol.for("symbol"), function() {}];
 
     const arrayOfNonFiniteNumbers = [-Infinity, NaN, Infinity];
@@ -37,6 +62,10 @@ describe("json2019", () => {
         checkArray(arrayOfPrimitiveNumbers);
       });
 
+      it("should handle primitive wrappers correctly", () => {
+        checkArray(arrayOfPrimitiveWrappers);
+      });
+
       it("should handle infinite numbers correctly", () => {
         checkArray(arrayOfNonFiniteNumbers);
       });
@@ -48,7 +77,16 @@ describe("json2019", () => {
       it("should handle date correctly", () => {
         expectValuesMatch(new Date(2006, 0, 2, 15, 4, 5));
       });
+
+      it("should handle structural data types (Map, Set, WeakMap, WeakSet) correctly", () => {
+        checkArray(arrayOfStructuralDataTypes);
+      });
+
+      it("should handle typed arrays correctly", () => {
+        checkArray(arrayOfTypedArrays);
+      });
     });
+
     describe("array values", () => {
       it("should handle empty arrays", () => {
         expectValuesMatch([]);
@@ -62,12 +100,30 @@ describe("json2019", () => {
         expectValuesMatch(arrayOfPrimitives);
       });
 
+      it("should handle arrays of primitive wrappers correctly", () => {
+        expectValuesMatch(arrayOfPrimitiveWrappers);
+      });
+
       it("should censor empty value (undefined, Function or Symbol) to null", () => {
         expectValuesMatch(arrayOfEmptyValues);
       });
 
       it("should replace infinite numbers with null", () => {
         expectValuesMatch(arrayOfNonFiniteNumbers);
+      });
+
+      it("should handle structural data types (Map, Set, WeakMap, WeakSet) correctly", () => {
+        expectValuesMatch(arrayOfStructuralDataTypes);
+      });
+
+      it("should handle typed arrays", () => {
+        expectValuesMatch(arrayOfTypedArrays);
+      });
+
+      it("should filter-off string -keyed array elements", () => {
+        let a = ["foo", "bar"];
+        a["baz"] = "quux";
+        expectValuesMatch(a);
       });
     });
 
@@ -78,6 +134,26 @@ describe("json2019", () => {
 
       it("should handle object with primitive values correctly", () => {
         expectValuesMatch(makeObject(arrayOfPrimitives));
+      });
+
+      it.skip("should censor empty values by skipping them", () => {
+        expectValuesMatch(makeObject(arrayOfEmptyValues));
+      });
+
+      it("should handle structural data as values", () => {
+        expectValuesMatch(
+          makeObject(arrayOfPrimitives, arrayOfPrimitiveWrappers, {}, [])
+        );
+      });
+
+      it("should use toJSON() prop to serialize data if provided", () => {
+        expectValuesMatch({
+          x: 5,
+          y: 6,
+          toJSON() {
+            return this.x + this.y;
+          }
+        });
       });
     });
 
@@ -100,73 +176,5 @@ describe("json2019", () => {
         {}
       );
     }
-
-    it("should handle Map, Set, WeakMap, WeakSet", function() {
-      expect(
-        json2019.stringify([
-          new Set([1]),
-          new Map([[1, 2]]),
-          new WeakSet([{ a: 1 }]),
-          new WeakMap([[{ a: 1 }, 2]])
-        ])
-      ).to.equal("[{},{},{},{}]");
-    });
-
-    it("should handle primitive wrappers correctly", function() {
-      expect(
-        json2019.stringify([
-          new Number(3),
-          new String("false"),
-          new Boolean(false)
-        ])
-      ).to.equal('[3,"false",false]');
-    });
-
-    it("should filter-off string -keyed array elements", function() {
-      let a = ["foo", "bar"];
-      a["baz"] = "quux";
-      expect(json2019.stringify(a)).to.equal('["foo","bar"]');
-    });
-
-    it("should handle arrays as object values", function() {
-      expect(
-        json2019.stringify({ x: [10, undefined, function() {}, Symbol("")] })
-      ).to.equal('{"x":[10,null,null,null]}');
-    });
-
-    it("should handle typed arrays", function() {
-      expect(
-        json2019.stringify([
-          new Int8Array([1]),
-          new Int16Array([1]),
-          new Int32Array([1])
-        ])
-      ).to.equal('[{"0":1},{"0":1},{"0":1}]');
-
-      expect(
-        json2019.stringify([
-          new Uint8Array([1]),
-          new Uint8ClampedArray([1]),
-          new Uint16Array([1]),
-          new Uint32Array([1])
-        ])
-      ).to.equal('[{"0":1},{"0":1},{"0":1},{"0":1}]');
-
-      expect(
-        json2019.stringify([new Float32Array([1]), new Float64Array([1])])
-      ).to.equal('[{"0":1},{"0":1}]');
-    });
-
-    it("should use toJSON() prop to serialize data if provided", function() {
-      expect(
-        json2019.stringify({
-          x: 5,
-          y: 6,
-          toJSON() {
-            return this.x + this.y;
-          }
-        })
-      ).to.equal("11");
-    });
   });
 });
