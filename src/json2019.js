@@ -8,19 +8,24 @@ function parse(string) {
   return result;
 }
 
-function stringify(obj) {
-  let result = "";
-  if (typeof obj === "object") {
-    result = stringifyObject(obj);
-  } else if (["boolean", "string", "number"].includes(typeof obj)) {
-    result = obj.toString();
+function stringify(obj, level = 0) {
+  if (Array.isArray(obj)) {
+    return stringifyArray(obj);
+  } else if (typeof obj === "object") {
+    return stringifyObject(obj);
+  } else if (typeof obj === "string") {
+    return level === 0 ? obj : `'${obj}'`;
+  } else if (["boolean", "number"].includes(typeof obj)) {
+    return obj.toString();
   }
-
-  return result;
 }
 
 function stringifyObject(obj) {
   if (Object.keys(obj).length === 0) {
     return "{}";
   }
+}
+
+function stringifyArray(obj, level) {
+  return `[${obj.map(o => stringify(o, level + 1)).join(",")}]`;
 }

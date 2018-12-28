@@ -28,5 +28,15 @@ describe("json2019", function() {
       expect(json2019.stringify(-10)).to.equal("-10");
       expect(json2019.stringify(3.3)).to.equal("3.3");
     });
+
+    it("should handle empty arrays", function() {
+      expect(json2019.stringify([])).to.equal("[]");
+    });
+
+    it("should handle non-empty arrays", function() {
+      expect(json2019.stringify(["aaa", false, true, 1, 1.3, {}])).to.equal(
+        "['aaa',false,true,1,1.3,{}]"
+      );
+    });
   });
 });
