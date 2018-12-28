@@ -12,6 +12,8 @@ function stringify(obj) {
   let result = "";
   if (typeof obj === "object") {
     result = stringifyObject(obj);
+  } else if (["boolean", "string", "number"].includes(typeof obj)) {
+    result = obj.toString();
   }
 
   return result;
