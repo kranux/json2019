@@ -14,7 +14,7 @@ function parse(string) {
   return result;
 }
 
-function stringify(obj, context = contexts.topLevel) {
+function stringify(obj, context = contexts.topLevel, key = "") {
   const objType = typeof obj;
 
   return [
@@ -31,21 +31,26 @@ function stringify(obj, context = contexts.topLevel) {
       () => obj === undefined || ["function", "symbol"].includes(objType),
       (_, context) => (context === contexts.topLevel ? "undefined" : "null")
     ]
-  ].find(([condition]) => condition())[1](obj, context);
+  ].find(([condition]) => condition())[1](obj, context, key);
 }
 
-function stringifyObject(obj) {
+function stringifyObject(obj, context, key) {
   if (obj === null) {
     return "null";
+  } else if (typeof obj.toJSON === "function") {
+    const param = context === contexts.topLevel ? "" : key;
+    return stringify(obj.toJSON.call(obj, param, key));
   } else {
     return `{${Object.keys(obj)
-      .map(key => `"${key}":${stringify(obj[key], contexts.object)}`)
+      .map(key => `"${key}":${stringify(obj[key], contexts.object, key)}`)
       .join(",")}}`;
   }
 }
 
 function stringifyArray(obj) {
-  return `[${obj.map(o => stringify(o, contexts.array)).join(",")}]`;
+  return `[${obj
+    .map((obj, key) => stringify(obj, contexts.array, key))
+    .join(",")}]`;
 }
 
 function stringifyNumber(obj) {

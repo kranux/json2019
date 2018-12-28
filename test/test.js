@@ -128,5 +128,17 @@ describe("json2019", function() {
         json2019.stringify([new Float32Array([1]), new Float64Array([1])])
       ).to.equal('[{"0":1},{"0":1}]');
     });
+
+    it("should use toJSON() prop to serialize data if provided", function() {
+      expect(
+        json2019.stringify({
+          x: 5,
+          y: 6,
+          toJSON() {
+            return this.x + this.y;
+          }
+        })
+      ).to.equal("11");
+    });
   });
 });
