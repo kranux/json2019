@@ -42,7 +42,9 @@ function stringifyObject(obj, context, key) {
     return stringify(obj.toJSON.call(obj, param, key));
   } else {
     return `{${Object.keys(obj)
-      .map(key => `"${key}":${stringify(obj[key], contexts.object, key)}`)
+      .map(key => ({ key, value: stringify(obj[key], contexts.object, key) }))
+      .filter(({ value }) => Boolean(value))
+      .map(({ key, value }) => `"${key}":${value}`)
       .join(",")}}`;
   }
 }
@@ -66,5 +68,7 @@ function stringifyBoolean(bool) {
 }
 
 function stringifyEmptyValue(_, context) {
-  return context === contexts.topLevel ? undefined : "null";
+  return [contexts.topLevel, contexts.object].includes(context)
+    ? undefined
+    : "null";
 }

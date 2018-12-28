@@ -136,7 +136,7 @@ describe("json2019", () => {
         expectValuesMatch(makeObject(arrayOfPrimitives));
       });
 
-      it.skip("should censor empty values by skipping them", () => {
+      it("should omit empty values", () => {
         expectValuesMatch(makeObject(arrayOfEmptyValues));
       });
 
