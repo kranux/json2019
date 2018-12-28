@@ -22,7 +22,9 @@ function stringify(obj, context = contexts.topLevel) {
     return stringifyObject(obj);
   } else if (objType === "string") {
     return context === contexts.topLevel ? obj : `'${obj}'`;
-  } else if (["boolean", "number"].includes(objType)) {
+  } else if (objType === "number") {
+    return stringifyNumber(obj);
+  } else if (objType === "boolean") {
     return obj.toString();
   } else if (obj === undefined || ["function", "symbol"].includes(objType)) {
     return context === contexts.topLevel ? "undefined" : "null";
@@ -30,11 +32,17 @@ function stringify(obj, context = contexts.topLevel) {
 }
 
 function stringifyObject(obj) {
-  if (Object.keys(obj).length === 0) {
+  if (obj === null) {
+    return "null";
+  } else if (Object.keys(obj).length === 0) {
     return "{}";
   }
 }
 
-function stringifyArray(obj, level) {
-  return `[${obj.map(o => stringify(o, level + 1)).join(",")}]`;
+function stringifyArray(obj) {
+  return `[${obj.map(o => stringify(o, contexts.array)).join(",")}]`;
+}
+
+function stringifyNumber(obj) {
+  return Number.isFinite(obj) ? obj.toString() : "null";
 }

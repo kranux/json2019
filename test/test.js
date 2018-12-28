@@ -52,5 +52,14 @@ describe("json2019", function() {
         "undefined"
       );
     });
+
+    it("should handle The numbers Infinity and NaN, as well as the value null correctly: by returning null ", function() {
+      expect(json2019.stringify(null)).to.equal("null");
+      expect(json2019.stringify(NaN)).to.equal("null");
+      expect(json2019.stringify(Infinity)).to.equal("null");
+      expect(json2019.stringify([null, NaN, Infinity])).to.equals(
+        "[null,null,null]"
+      );
+    });
   });
 });
