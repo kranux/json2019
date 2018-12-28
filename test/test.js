@@ -73,7 +73,7 @@ describe("json2019", function() {
       expect(json2019.stringify(date)).to.equal(JSON.stringify(date));
     });
 
-    it("should handle Map, Set, WeakMap", function() {
+    it("should handle Map, Set, WeakMap, WeakSet", function() {
       expect(
         json2019.stringify([
           new Set([1]),
@@ -92,6 +92,41 @@ describe("json2019", function() {
           new Boolean(false)
         ])
       ).to.equal('[3,"false",false]');
+    });
+
+    it("should filter-off string -keyed array elements", function() {
+      let a = ["foo", "bar"];
+      a["baz"] = "quux";
+      expect(json2019.stringify(a)).to.equal('["foo","bar"]');
+    });
+
+    it("should handle arrays as object values", function() {
+      expect(
+        json2019.stringify({ x: [10, undefined, function() {}, Symbol("")] })
+      ).to.equal('{"x":[10,null,null,null]}');
+    });
+
+    it("should handle typed arrays", function() {
+      expect(
+        json2019.stringify([
+          new Int8Array([1]),
+          new Int16Array([1]),
+          new Int32Array([1])
+        ])
+      ).to.equal('[{"0":1},{"0":1},{"0":1}]');
+
+      expect(
+        json2019.stringify([
+          new Uint8Array([1]),
+          new Uint8ClampedArray([1]),
+          new Uint16Array([1]),
+          new Uint32Array([1])
+        ])
+      ).to.equal('[{"0":1},{"0":1},{"0":1},{"0":1}]');
+
+      expect(
+        json2019.stringify([new Float32Array([1]), new Float64Array([1])])
+      ).to.equal('[{"0":1},{"0":1}]');
     });
   });
 });
