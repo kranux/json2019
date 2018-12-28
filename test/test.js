@@ -83,5 +83,15 @@ describe("json2019", function() {
         ])
       ).to.equal("[{},{},{},{}]");
     });
+
+    it("should handle primitive wrappers correctly", function() {
+      expect(
+        json2019.stringify([
+          new Number(3),
+          new String("false"),
+          new Boolean(false)
+        ])
+      ).to.equal('[3,"false",false]');
+    });
   });
 });

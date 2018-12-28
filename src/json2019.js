@@ -16,21 +16,22 @@ function parse(string) {
 
 function stringify(obj, context = contexts.topLevel) {
   const objType = typeof obj;
-  if (Array.isArray(obj)) {
-    return stringifyArray(obj);
-  } else if (obj instanceof Date) {
-    return stringifyString(obj.toISOString());
-  } else if (objType === "string") {
-    return stringifyString(obj);
-  } else if (objType === "object") {
-    return stringifyObject(obj);
-  } else if (objType === "number") {
-    return stringifyNumber(obj);
-  } else if (objType === "boolean") {
-    return obj.toString();
-  } else if (obj === undefined || ["function", "symbol"].includes(objType)) {
-    return context === contexts.topLevel ? "undefined" : "null";
-  }
+
+  return [
+    [() => Array.isArray(obj), stringifyArray],
+    [() => obj instanceof Date, obj => stringifyString(obj.toISOString())],
+    [() => obj instanceof String, stringifyString],
+    [() => obj instanceof Number, stringifyNumber],
+    [() => obj instanceof Boolean, stringifyBoolean],
+    [() => objType === "string", stringifyString],
+    [() => objType === "object", stringifyObject],
+    [() => objType === "number", stringifyNumber],
+    [() => objType === "boolean", stringifyBoolean],
+    [
+      () => obj === undefined || ["function", "symbol"].includes(objType),
+      (_, context) => (context === contexts.topLevel ? "undefined" : "null")
+    ]
+  ].find(([condition]) => condition())[1](obj, context);
 }
 
 function stringifyObject(obj) {
@@ -48,9 +49,13 @@ function stringifyArray(obj) {
 }
 
 function stringifyNumber(obj) {
-  return Number.isFinite(obj) ? obj.toString() : "null";
+  return Number.isFinite(obj.valueOf()) ? obj.toString() : "null";
 }
 
 function stringifyString(str) {
   return `"${str.toString()}"`;
+}
+
+function stringifyBoolean(bool) {
+  return bool.toString();
 }
