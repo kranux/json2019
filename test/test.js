@@ -4,15 +4,17 @@ const json2019 = require("../src/json2019");
 
 describe("json2019", () => {
   describe("#stringify()", () => {
-    const stringify = json2019.stringify.bind(json2019);
-
-    const jsonStringify = JSON.stringify.bind(JSON);
-
     const arrayOfPrimitiveBooleans = [true, false];
 
     const arrayOfPrimitiveStrings = ["", "a", "10", "true", "{}"];
 
     const arrayOfPrimitiveNumbers = [-10, 0, 3.3, 10];
+
+    const arrayOfPrimitives = [
+      ...arrayOfPrimitiveBooleans,
+      ...arrayOfPrimitiveNumbers,
+      ...arrayOfPrimitiveStrings
+    ];
 
     const arrayOfEmptyValues = [undefined, Symbol.for("symbol"), function() {}];
 
@@ -57,11 +59,7 @@ describe("json2019", () => {
       });
 
       it("should handle arrays made of primitive values correctly", () => {
-        expectValuesMatch([
-          ...arrayOfPrimitiveBooleans,
-          ...arrayOfPrimitiveNumbers,
-          ...arrayOfPrimitiveStrings
-        ]);
+        expectValuesMatch(arrayOfPrimitives);
       });
 
       it("should censor empty value (undefined, Function or Symbol) to null", () => {
@@ -72,8 +70,15 @@ describe("json2019", () => {
         expectValuesMatch(arrayOfNonFiniteNumbers);
       });
     });
-    it("should handle empty object correctly", function() {
-      expect(json2019.stringify({})).to.equal("{}");
+
+    describe("object values", () => {
+      it("should handle empty object correctly", () => {
+        expectValuesMatch({});
+      });
+
+      it("should handle object with primitive values correctly", () => {
+        expectValuesMatch(makeObject(arrayOfPrimitives));
+      });
     });
 
     function checkArray(array) {
@@ -81,14 +86,20 @@ describe("json2019", () => {
     }
 
     function expectValuesMatch(value) {
-      expect(stringify(value)).to.equal(jsonStringify(value));
+      const json2019StringifyResult = json2019.stringify(value);
+      const jsonStringifyResult = JSON.stringify(value);
+      // console.debug("input", value);
+      // console.debug("json2019.stringify() result:", json2019StringifyResult);
+      // console.debug("JSON.stringify() result:", jsonStringifyResult);
+      expect(json2019StringifyResult).to.equal(jsonStringifyResult);
     }
 
-    it("should handle non empty objects correctly: convert enumerable props to string", function() {
-      expect(json2019.stringify({ a: "a", b: 10, c: true })).to.equal(
-        '{"a":"a","b":10,"c":true}'
+    function makeObject(arrayOfValues) {
+      return arrayOfValues.reduce(
+        (acc, curr, i) => ({ ...acc, [`key-${i}`]: curr }),
+        {}
       );
-    });
+    }
 
     it("should handle Map, Set, WeakMap, WeakSet", function() {
       expect(
