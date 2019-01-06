@@ -221,10 +221,10 @@ describe("json2019", () => {
       });
     }
 
-    function expectResultsMatch(obj, replacer) {
-      const json2019StringifyResult = json2019.stringify(obj, replacer);
-      const jsonStringifyResult = JSON.stringify(obj, replacer);
-      //console.debug("input", obj, replacer);
+    function expectResultsMatch(...args) {
+      const json2019StringifyResult = json2019.stringify.apply(json2019, args);
+      const jsonStringifyResult = JSON.stringify.apply(JSON, args);
+      //console.debug("input",...args);
       //console.debug("json2019.stringify() result:", json2019StringifyResult);
       //console.debug("JSON.stringify() result:", jsonStringifyResult);
       expect(json2019StringifyResult).to.equal(jsonStringifyResult);
