@@ -197,50 +197,52 @@ describe("json2019", () => {
       });
     });
 
-    describe("with replacer param as a function", () => {
-      it("should work for object", () => {
-        function replacer(key, value) {
-          // Filtering out properties
-          if (typeof value === "string") {
-            return undefined;
+    describe("with replacer argument", () => {
+      describe("as a function", () => {
+        it("should work for object", () => {
+          function replacer(key, value) {
+            // Filtering out properties
+            if (typeof value === "string") {
+              return undefined;
+            }
+            return value;
           }
-          return value;
-        }
 
-        expectResultsMatch(
-          {
-            foundation: "Mozilla",
-            model: "box",
-            week: 45,
-            transport: "car",
-            month: 7,
-            aa: { bb: "aaa", cc: 123 }
-          },
-          replacer
-        );
+          expectResultsMatch(
+            {
+              foundation: "Mozilla",
+              model: "box",
+              week: 45,
+              transport: "car",
+              month: 7,
+              aa: { bb: "aaa", cc: 123 }
+            },
+            replacer
+          );
+        });
+
+        it("should work for array", () => {
+          function replacer(key, value) {
+            return key % 2 === 0 ? value : undefined;
+          }
+
+          expectResultsMatch(["alfa", "bravo", "charlie", "delta"], replacer);
+        });
       });
 
-      it("should work for array", () => {
-        function replacer(key, value) {
-          return key % 2 === 0 ? value : undefined;
-        }
-
-        expectResultsMatch(["alfa", "bravo", "charlie", "delta"], replacer);
-      });
-    });
-
-    describe("with replacer as array", () => {
-      it("should work with object", () => {
-        expectResultsMatch(
-          {
-            foundation: "Mozilla",
-            model: "box",
-            week: 45,
-            transport: "car",
-            month: 7
-          },
-          ["week", "month"]
-        );
+      describe("as array", () => {
+        it("should work with object", () => {
+          expectResultsMatch(
+            {
+              foundation: "Mozilla",
+              model: "box",
+              week: 45,
+              transport: "car",
+              month: 7
+            },
+            ["week", "month"]
+          );
+        });
       });
     });
 
