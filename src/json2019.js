@@ -14,7 +14,14 @@ function parse(string) {
   return result;
 }
 
-function stringify(obj, replacer, context = contexts.topLevel, key = "") {
+function stringify(
+  obj,
+  replacer,
+  spacer,
+  context = contexts.topLevel,
+  key = "",
+  depth = 1
+) {
   const objType = typeof obj;
 
   return [
@@ -28,10 +35,17 @@ function stringify(obj, replacer, context = contexts.topLevel, key = "") {
       () => ["function", "symbol", "undefined"].includes(objType),
       stringifyEmptyValue
     ]
-  ].find(([condition]) => condition())[1](obj, replacer, context, key);
+  ].find(([condition]) => condition())[1](
+    obj,
+    replacer,
+    spacer,
+    context,
+    key,
+    depth
+  );
 }
 
-function stringifyObject(obj, replacer, context, key) {
+function stringifyObject(obj, replacer, spacer, context, key, depth) {
   if (obj === null) {
     return "null";
   } else if (isCallable(obj.toJSON)) {
@@ -41,27 +55,53 @@ function stringifyObject(obj, replacer, context, key) {
     return stringifyEntries(obj);
   }
 
+  function getSpacer(depth) {
+    return " ".repeat(depth * spacer);
+  }
+
+  function wrapString(str) {
+    return spacer ? `{${str}\n${getSpacer(depth - 1)}}` : `{${str}}`;
+  }
+
+  function formatEntry({ key, value }) {
+    return spacer
+      ? `\n${getSpacer(depth)}"${key}": ${value}`
+      : `"${key}":${value}`;
+  }
+
   function stringifyEntries(object) {
-    return `{${Object.keys(object)
-      .map(key => ({
-        key,
-        value: stringifyEntry({
-          context: contexts.object,
+    return wrapString(
+      Object.keys(object)
+        .map(key => ({
           key,
-          object,
-          replacer,
-          value: object[key]
-        })
-      }))
-      .filter(({ value }) => Boolean(value))
-      .map(({ key, value }) => `"${key}":${value}`)
-      .join(",")}}`;
+          value: stringifyEntry({
+            context: contexts.object,
+            key,
+            object,
+            replacer,
+            spacer,
+            depth,
+            value: object[key]
+          })
+        }))
+        .filter(({ value }) => Boolean(value))
+        .map(formatEntry)
+        .join(",")
+    );
   }
 }
 
-function stringifyEntry({ object, key, value, replacer, context }) {
+function stringifyEntry({
+  object,
+  key,
+  value,
+  replacer,
+  context,
+  spacer,
+  depth
+}) {
   const replaced = getReplacerFunction(replacer).call(object, key, value);
-  return stringify(replaced, replacer, context, key);
+  return stringify(replaced, replacer, spacer, context, key, (depth += 1));
 }
 
 function getReplacerFunction(replacer) {
@@ -73,7 +113,7 @@ function getReplacerFunction(replacer) {
   return (_, value) => value;
 }
 
-function stringifyArray(object, replacer) {
+function stringifyArray(object, replacer, spacer) {
   return `[${object
     .map((obj, key) =>
       stringifyEntry({
@@ -81,6 +121,7 @@ function stringifyArray(object, replacer) {
         key,
         object,
         replacer,
+        spacer,
         value: obj
       })
     )
@@ -110,7 +151,7 @@ function stringifyBoolean(bool) {
   return bool.toString();
 }
 
-function stringifyEmptyValue(_, _, context) {
+function stringifyEmptyValue(_, _, _, context) {
   return [contexts.topLevel, contexts.object].includes(context)
     ? undefined
     : "null";

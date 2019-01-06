@@ -246,6 +246,26 @@ describe("json2019", () => {
       });
     });
 
+    describe("with spacer argument", () => {
+      describe("as number", () => {
+        it("should pad stringified data", () => {
+          expectResultsMatch(
+            {
+              alfa: "alfa",
+              bravo: "bravo",
+              charlie: {
+                delta: "delta",
+                echo: "echo",
+                foxtrot: { golf: "golf" }
+              }
+            },
+            undefined,
+            3
+          );
+        });
+      });
+    });
+
     function checkArray(array) {
       array.forEach(e => {
         expectResultsMatch(e);
