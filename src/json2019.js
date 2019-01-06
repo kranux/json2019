@@ -60,10 +60,17 @@ function stringifyObject(obj, replacer, context, key) {
 }
 
 function stringifyEntry({ object, key, value, replacer, context }) {
-  const replaced = isCallable(replacer)
-    ? replacer.call(object, key, value)
-    : value;
+  const replaced = getReplacerFunction(replacer).call(object, key, value);
   return stringify(replaced, replacer, context, key);
+}
+
+function getReplacerFunction(replacer) {
+  if (isCallable(replacer)) {
+    return replacer;
+  } else if (Array.isArray(replacer)) {
+    return (key, value) => (replacer.includes(key) ? value : undefined);
+  }
+  return (_, value) => value;
 }
 
 function stringifyArray(object, replacer) {

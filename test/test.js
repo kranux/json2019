@@ -223,6 +223,21 @@ describe("json2019", () => {
       });
     });
 
+    describe("with replacer as array", () => {
+      it("should work with object", () => {
+        expectResultsMatch(
+          {
+            foundation: "Mozilla",
+            model: "box",
+            week: 45,
+            transport: "car",
+            month: 7
+          },
+          ["week", "month"]
+        );
+      });
+    });
+
     function checkArray(array) {
       array.forEach(e => {
         expectResultsMatch(e);
