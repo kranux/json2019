@@ -48,7 +48,9 @@ describe("json2019", () => {
       new Set([1]),
       new Map([[1, 2]]),
       new WeakSet([{ a: 1 }]),
-      new WeakMap([[{ a: 1 }, 2]])
+      new WeakMap([[{ a: 1 }, 2]]),
+      { a: "a", b: "b" },
+      ["a", "b"]
     ];
 
     const arrayOfTypedArrays = [
@@ -66,6 +68,11 @@ describe("json2019", () => {
     const arrayOfEmptyValues = [undefined, Symbol.for("symbol"), function() {}];
 
     const arrayOfNonFiniteNumbers = [-Infinity, NaN, Infinity];
+
+    const deepObject = makeObject(
+      arrayOfPrimitives,
+      arrayOfStructuralDataTypes
+    );
 
     describe("pure values", () => {
       it("should handle null", () => {
@@ -167,9 +174,7 @@ describe("json2019", () => {
       });
 
       it("should handle structural data as values", () => {
-        expectResultsMatch(
-          makeObject(arrayOfPrimitives, arrayOfPrimitiveWrappers, {}, [])
-        );
+        expectResultsMatch(deepObject);
       });
 
       it("should use toJSON() prop to serialize data if provided", () => {
@@ -208,7 +213,8 @@ describe("json2019", () => {
             model: "box",
             week: 45,
             transport: "car",
-            month: 7
+            month: 7,
+            aa: { bb: "aaa", cc: 123 }
           },
           replacer
         );
