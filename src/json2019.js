@@ -20,13 +20,10 @@ function stringify(obj, replacer, context = contexts.topLevel, key = "") {
   return [
     [() => Array.isArray(obj), stringifyArray],
     [() => obj instanceof Date, obj => stringifyString(obj.toISOString())],
-    [() => obj instanceof String, stringifyString],
-    [() => obj instanceof Number, stringifyNumber],
-    [() => obj instanceof Boolean, stringifyBoolean],
-    [() => objType === "string", stringifyString],
+    [() => obj instanceof String || objType === "string", stringifyString],
+    [() => obj instanceof Number || objType === "number", stringifyNumber],
+    [() => obj instanceof Boolean || objType === "boolean", stringifyBoolean],
     [() => objType === "object", stringifyObject],
-    [() => objType === "number", stringifyNumber],
-    [() => objType === "boolean", stringifyBoolean],
     [
       () => ["function", "symbol", "undefined"].includes(objType),
       stringifyEmptyValue
@@ -81,12 +78,10 @@ const stringReplacements = {
 };
 
 function stringifyString(str) {
-  const replaced = Object.keys(stringReplacements).reduce(
+  return `"${Object.keys(stringReplacements).reduce(
     (acc, replacer) => acc.replace(replacer, stringReplacements[replacer]),
     str.toString()
-  );
-
-  return `"${replaced}"`;
+  )}"`;
 }
 
 function stringifyBoolean(bool) {
