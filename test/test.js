@@ -181,6 +181,15 @@ describe("json2019", () => {
           }
         });
       });
+
+      it("should skip non-enumerable values", () => {
+        expectValuesMatch(
+          Object.create(null, {
+            x: { value: "x", enumerable: false },
+            y: { value: "y", enumerable: true }
+          })
+        );
+      });
     });
 
     function checkArray(array) {
