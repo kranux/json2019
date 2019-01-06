@@ -41,6 +41,10 @@ function stringifyObject(obj, replacer, context, key) {
     const param = context === contexts.topLevel ? "" : key;
     return stringify(obj.toJSON.call(obj, param, key));
   } else {
+    return stringifyEntries(obj);
+  }
+
+  function stringifyEntries(obj) {
     return `{${Object.keys(obj)
       .map(key => ({
         key,
@@ -90,7 +94,7 @@ function stringifyBoolean(bool) {
   return bool.toString();
 }
 
-function stringifyEmptyValue(_, replacer, context) {
+function stringifyEmptyValue(_, _, context) {
   return [contexts.topLevel, contexts.object].includes(context)
     ? undefined
     : "null";
