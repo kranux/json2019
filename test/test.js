@@ -213,6 +213,14 @@ describe("json2019", () => {
           replacer
         );
       });
+
+      it("should work for array", () => {
+        function replacer(key, value) {
+          return key % 2 === 0 ? value : undefined;
+        }
+
+        expectResultsMatch(["alfa", "bravo", "charlie", "delta"], replacer);
+      });
     });
 
     function checkArray(array) {

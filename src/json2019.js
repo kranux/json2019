@@ -41,27 +41,42 @@ function stringifyObject(obj, replacer, context, key) {
     return stringifyEntries(obj);
   }
 
-  function stringifyEntries(obj) {
-    return `{${Object.keys(obj)
+  function stringifyEntries(object) {
+    return `{${Object.keys(object)
       .map(key => ({
         key,
-        value: stringifyEntry(key, obj[key])
+        value: stringifyEntry({
+          context: contexts.object,
+          key,
+          object,
+          replacer,
+          value: object[key]
+        })
       }))
       .filter(({ value }) => Boolean(value))
       .map(({ key, value }) => `"${key}":${value}`)
       .join(",")}}`;
   }
-
-  function stringifyEntry(key, value) {
-    return isCallable(replacer)
-      ? replacer.call(obj, key, value)
-      : stringify(value, replacer, contexts.object, key);
-  }
 }
 
-function stringifyArray(obj, replacer) {
-  return `[${obj
-    .map((obj, key) => stringify(obj, replacer, contexts.array, key))
+function stringifyEntry({ object, key, value, replacer, context }) {
+  const replaced = isCallable(replacer)
+    ? replacer.call(object, key, value)
+    : value;
+  return stringify(replaced, replacer, context, key);
+}
+
+function stringifyArray(object, replacer) {
+  return `[${object
+    .map((obj, key) =>
+      stringifyEntry({
+        context: contexts.array,
+        key,
+        object,
+        replacer,
+        value: obj
+      })
+    )
     .join(",")}]`;
 }
 
