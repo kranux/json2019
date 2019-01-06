@@ -14,7 +14,7 @@ function parse(string) {
   return result;
 }
 
-function stringify(obj, context = contexts.topLevel, key = "") {
+function stringify(obj, replacer, context = contexts.topLevel, key = "") {
   const objType = typeof obj;
 
   return [
@@ -31,10 +31,10 @@ function stringify(obj, context = contexts.topLevel, key = "") {
       () => ["function", "symbol", "undefined"].includes(objType),
       stringifyEmptyValue
     ]
-  ].find(([condition]) => condition())[1](obj, context, key);
+  ].find(([condition]) => condition())[1](obj, replacer, context, key);
 }
 
-function stringifyObject(obj, context, key) {
+function stringifyObject(obj, replacer, context, key) {
   if (obj === null) {
     return "null";
   } else if (typeof obj.toJSON === "function") {
@@ -42,16 +42,26 @@ function stringifyObject(obj, context, key) {
     return stringify(obj.toJSON.call(obj, param, key));
   } else {
     return `{${Object.keys(obj)
-      .map(key => ({ key, value: stringify(obj[key], contexts.object, key) }))
+      .map(key => ({
+        key,
+        value: stringifyEntry(key, obj[key])
+      }))
       .filter(({ value }) => Boolean(value))
       .map(({ key, value }) => `"${key}":${value}`)
       .join(",")}}`;
   }
+
+  function stringifyEntry(key, value) {
+    if (typeof replacer === "function") {
+      return replacer.call(obj, key, value);
+    }
+    return stringify(value, replacer, contexts.object, key);
+  }
 }
 
-function stringifyArray(obj) {
+function stringifyArray(obj, replacer) {
   return `[${obj
-    .map((obj, key) => stringify(obj, contexts.array, key))
+    .map((obj, key) => stringify(obj, replacer, contexts.array, key))
     .join(",")}]`;
 }
 
@@ -80,7 +90,7 @@ function stringifyBoolean(bool) {
   return bool.toString();
 }
 
-function stringifyEmptyValue(_, context) {
+function stringifyEmptyValue(_, replacer, context) {
   return [contexts.topLevel, contexts.object].includes(context)
     ? undefined
     : "null";

@@ -69,7 +69,7 @@ describe("json2019", () => {
 
     describe("pure values", () => {
       it("should handle null", () => {
-        expectValuesMatch(null);
+        expectResultsMatch(null);
       });
 
       it("should handle boolean correctly", () => {
@@ -97,7 +97,7 @@ describe("json2019", () => {
       });
 
       it("should handle date correctly", () => {
-        expectValuesMatch(new Date(2006, 0, 2, 15, 4, 5));
+        expectResultsMatch(new Date(2006, 0, 2, 15, 4, 5));
       });
 
       it("should handle structural data types (Map, Set, WeakMap, WeakSet) correctly", () => {
@@ -111,69 +111,69 @@ describe("json2019", () => {
 
     describe("array values", () => {
       it("should handle empty arrays", () => {
-        expectValuesMatch([]);
+        expectResultsMatch([]);
       });
 
       it("should handle array containing null", () => {
-        expectValuesMatch([null]);
+        expectResultsMatch([null]);
       });
 
       it("should handle arrays made of primitive values correctly", () => {
-        expectValuesMatch(arrayOfPrimitives);
+        expectResultsMatch(arrayOfPrimitives);
       });
 
       it("should handle arrays of primitive wrappers correctly", () => {
-        expectValuesMatch(arrayOfPrimitiveWrappers);
+        expectResultsMatch(arrayOfPrimitiveWrappers);
       });
 
       it("should censor empty value (undefined, Function or Symbol) to null", () => {
-        expectValuesMatch(arrayOfEmptyValues);
+        expectResultsMatch(arrayOfEmptyValues);
       });
 
       it("should replace infinite numbers with null", () => {
-        expectValuesMatch(arrayOfNonFiniteNumbers);
+        expectResultsMatch(arrayOfNonFiniteNumbers);
       });
 
       it("should handle structural data types (Map, Set, WeakMap, WeakSet) correctly", () => {
-        expectValuesMatch(arrayOfStructuralDataTypes);
+        expectResultsMatch(arrayOfStructuralDataTypes);
       });
 
       it("should handle typed arrays", () => {
-        expectValuesMatch(arrayOfTypedArrays);
+        expectResultsMatch(arrayOfTypedArrays);
       });
 
       it("should filter-off string -keyed array elements", () => {
         let a = ["foo", "bar"];
         a["baz"] = "quux";
-        expectValuesMatch(a);
+        expectResultsMatch(a);
       });
     });
 
     describe("object values", () => {
       it("should handle empty object correctly", () => {
-        expectValuesMatch({});
+        expectResultsMatch({});
       });
 
       it("should handle object with primitive values correctly", () => {
-        expectValuesMatch(makeObject(arrayOfPrimitives));
+        expectResultsMatch(makeObject(arrayOfPrimitives));
       });
 
       it("should omit empty values", () => {
-        expectValuesMatch(makeObject(arrayOfEmptyValues));
+        expectResultsMatch(makeObject(arrayOfEmptyValues));
       });
 
       it("should handle object containing non-finite numbers", () => {
-        expectValuesMatch(makeObject(arrayOfNonFiniteNumbers));
+        expectResultsMatch(makeObject(arrayOfNonFiniteNumbers));
       });
 
       it("should handle structural data as values", () => {
-        expectValuesMatch(
+        expectResultsMatch(
           makeObject(arrayOfPrimitives, arrayOfPrimitiveWrappers, {}, [])
         );
       });
 
       it("should use toJSON() prop to serialize data if provided", () => {
-        expectValuesMatch({
+        expectResultsMatch({
           x: 5,
           y: 6,
           toJSON() {
@@ -183,7 +183,7 @@ describe("json2019", () => {
       });
 
       it("should skip non-enumerable values", () => {
-        expectValuesMatch(
+        expectResultsMatch(
           Object.create(null, {
             x: { value: "x", enumerable: false },
             y: { value: "y", enumerable: true }
@@ -192,16 +192,41 @@ describe("json2019", () => {
       });
     });
 
+    describe("with replacer param as a function", () => {
+      it("should work for object", () => {
+        function replacer(key, value) {
+          // Filtering out properties
+          if (typeof value === "string") {
+            return undefined;
+          }
+          return value;
+        }
+
+        expectResultsMatch(
+          {
+            foundation: "Mozilla",
+            model: "box",
+            week: 45,
+            transport: "car",
+            month: 7
+          },
+          replacer
+        );
+      });
+    });
+
     function checkArray(array) {
-      array.forEach(expectValuesMatch);
+      array.forEach(e => {
+        expectResultsMatch(e);
+      });
     }
 
-    function expectValuesMatch(value) {
-      const json2019StringifyResult = json2019.stringify(value);
-      const jsonStringifyResult = JSON.stringify(value);
-      // console.debug("input", value);
-      // console.debug("json2019.stringify() result:", json2019StringifyResult);
-      // console.debug("JSON.stringify() result:", jsonStringifyResult);
+    function expectResultsMatch(obj, replacer) {
+      const json2019StringifyResult = json2019.stringify(obj, replacer);
+      const jsonStringifyResult = JSON.stringify(obj, replacer);
+      //console.debug("input", obj, replacer);
+      //console.debug("json2019.stringify() result:", json2019StringifyResult);
+      //console.debug("JSON.stringify() result:", jsonStringifyResult);
       expect(json2019StringifyResult).to.equal(jsonStringifyResult);
     }
 
