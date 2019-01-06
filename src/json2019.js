@@ -37,7 +37,7 @@ function stringify(obj, replacer, context = contexts.topLevel, key = "") {
 function stringifyObject(obj, replacer, context, key) {
   if (obj === null) {
     return "null";
-  } else if (typeof obj.toJSON === "function") {
+  } else if (isCallable(obj.toJSON)) {
     const param = context === contexts.topLevel ? "" : key;
     return stringify(obj.toJSON.call(obj, param, key));
   } else {
@@ -56,10 +56,9 @@ function stringifyObject(obj, replacer, context, key) {
   }
 
   function stringifyEntry(key, value) {
-    if (typeof replacer === "function") {
-      return replacer.call(obj, key, value);
-    }
-    return stringify(value, replacer, contexts.object, key);
+    return isCallable(replacer)
+      ? replacer.call(obj, key, value)
+      : stringify(value, replacer, contexts.object, key);
   }
 }
 
@@ -98,4 +97,8 @@ function stringifyEmptyValue(_, _, context) {
   return [contexts.topLevel, contexts.object].includes(context)
     ? undefined
     : "null";
+}
+
+function isCallable(f) {
+  return typeof f === "function";
 }
