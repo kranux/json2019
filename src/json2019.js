@@ -19,12 +19,12 @@ function stringify(object, replacer, spacer) {
 }
 
 function stringifyHandler({
+  context = contexts.topLevel,
+  depth = 1,
+  key = "",
   object,
   replacer,
-  spacer,
-  context = contexts.topLevel,
-  key = "",
-  depth = 1
+  spacer
 }) {
   const objType = typeof object;
 
@@ -46,12 +46,12 @@ function stringifyHandler({
       stringifyEmptyValue
     ]
   ].find(([condition]) => condition())[1]({
+    context,
+    depth,
+    key,
     object,
     replacer,
-    spacer,
-    context,
-    key,
-    depth
+    spacer
   });
 }
 
