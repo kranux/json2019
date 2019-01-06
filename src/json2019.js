@@ -67,8 +67,14 @@ function stringifyObject({ object, replacer, spacer, context, key, depth }) {
     return stringifyEntries(object);
   }
 
+  function getSpacerString() {
+    return typeof spacer === "number"
+      ? " ".repeat(Math.min(maxPadChars, spacer))
+      : spacer.substring(0, Math.min(maxPadChars, spacer.length));
+  }
+
   function getSpacer(depth) {
-    return " ".repeat(depth * Math.min(maxPadChars, spacer));
+    return getSpacerString().repeat(depth);
   }
 
   function wrapString(str) {
