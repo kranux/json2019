@@ -14,45 +14,55 @@ function parse(string) {
   return result;
 }
 
-function stringify(
-  obj,
+function stringify(object, replacer, spacer) {
+  return stringifyHandler({ object, replacer, spacer });
+}
+
+function stringifyHandler({
+  object,
   replacer,
   spacer,
   context = contexts.topLevel,
   key = "",
   depth = 1
-) {
-  const objType = typeof obj;
+}) {
+  const objType = typeof object;
 
   return [
-    [() => Array.isArray(obj), stringifyArray],
-    [() => obj instanceof Date, obj => stringifyString(obj.toISOString())],
-    [() => obj instanceof String || objType === "string", stringifyString],
-    [() => obj instanceof Number || objType === "number", stringifyNumber],
-    [() => obj instanceof Boolean || objType === "boolean", stringifyBoolean],
+    [() => Array.isArray(object), stringifyArray],
+    [
+      () => object instanceof Date,
+      () => stringifyString({ object: object.toISOString() })
+    ],
+    [() => object instanceof String || objType === "string", stringifyString],
+    [() => object instanceof Number || objType === "number", stringifyNumber],
+    [
+      () => object instanceof Boolean || objType === "boolean",
+      stringifyBoolean
+    ],
     [() => objType === "object", stringifyObject],
     [
       () => ["function", "symbol", "undefined"].includes(objType),
       stringifyEmptyValue
     ]
-  ].find(([condition]) => condition())[1](
-    obj,
+  ].find(([condition]) => condition())[1]({
+    object,
     replacer,
     spacer,
     context,
     key,
     depth
-  );
+  });
 }
 
-function stringifyObject(obj, replacer, spacer, context, key, depth) {
-  if (obj === null) {
+function stringifyObject({ object, replacer, spacer, context, key, depth }) {
+  if (object === null) {
     return "null";
-  } else if (isCallable(obj.toJSON)) {
+  } else if (isCallable(object.toJSON)) {
     const param = context === contexts.topLevel ? "" : key;
-    return stringify(obj.toJSON.call(obj, param, key));
+    return stringifyHandler({ object: object.toJSON.call(object, param, key) });
   } else {
-    return stringifyEntries(obj);
+    return stringifyEntries(object);
   }
 
   function getSpacer(depth) {
@@ -76,11 +86,11 @@ function stringifyObject(obj, replacer, spacer, context, key, depth) {
           key,
           value: stringifyEntry({
             context: contexts.object,
+            depth,
             key,
             object,
             replacer,
             spacer,
-            depth,
             value: object[key]
           })
         }))
@@ -92,16 +102,23 @@ function stringifyObject(obj, replacer, spacer, context, key, depth) {
 }
 
 function stringifyEntry({
-  object,
-  key,
-  value,
-  replacer,
   context,
+  depth,
+  key,
+  object,
+  replacer,
   spacer,
-  depth
+  value
 }) {
   const replaced = getReplacerFunction(replacer).call(object, key, value);
-  return stringify(replaced, replacer, spacer, context, key, (depth += 1));
+  return stringifyHandler({
+    object: replaced,
+    replacer,
+    spacer,
+    context,
+    key,
+    depth: (depth += 1)
+  });
 }
 
 function getReplacerFunction(replacer) {
@@ -113,7 +130,7 @@ function getReplacerFunction(replacer) {
   return (_, value) => value;
 }
 
-function stringifyArray(object, replacer, spacer) {
+function stringifyArray({ object, replacer, spacer }) {
   return `[${object
     .map((obj, key) =>
       stringifyEntry({
@@ -128,8 +145,8 @@ function stringifyArray(object, replacer, spacer) {
     .join(",")}]`;
 }
 
-function stringifyNumber(obj) {
-  return Number.isFinite(obj.valueOf()) ? obj.toString() : "null";
+function stringifyNumber({ object }) {
+  return Number.isFinite(object.valueOf()) ? object.toString() : "null";
 }
 
 const stringReplacements = {
@@ -140,18 +157,18 @@ const stringReplacements = {
   "\t": "\\t"
 };
 
-function stringifyString(str) {
+function stringifyString({ object }) {
   return `"${Object.keys(stringReplacements).reduce(
     (acc, replacer) => acc.replace(replacer, stringReplacements[replacer]),
-    str.toString()
+    object.toString()
   )}"`;
 }
 
-function stringifyBoolean(bool) {
-  return bool.toString();
+function stringifyBoolean({ object }) {
+  return object.toString();
 }
 
-function stringifyEmptyValue(_, _, _, context) {
+function stringifyEmptyValue({ context }) {
   return [contexts.topLevel, contexts.object].includes(context)
     ? undefined
     : "null";
