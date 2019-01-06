@@ -9,6 +9,8 @@ const contexts = {
   topLevel: "topLevel"
 };
 
+const maxPadChars = 10;
+
 function parse(string) {
   const result = null;
   return result;
@@ -66,7 +68,7 @@ function stringifyObject({ object, replacer, spacer, context, key, depth }) {
   }
 
   function getSpacer(depth) {
-    return " ".repeat(depth * spacer);
+    return " ".repeat(depth * Math.min(maxPadChars, spacer));
   }
 
   function wrapString(str) {

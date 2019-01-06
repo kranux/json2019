@@ -248,20 +248,22 @@ describe("json2019", () => {
 
     describe("with spacer argument", () => {
       describe("as number", () => {
+        const deepObject = {
+          alfa: "alfa",
+          bravo: "bravo",
+          charlie: {
+            delta: "delta",
+            echo: "echo",
+            foxtrot: { golf: "golf" }
+          }
+        };
+
         it("should pad stringified data", () => {
-          expectResultsMatch(
-            {
-              alfa: "alfa",
-              bravo: "bravo",
-              charlie: {
-                delta: "delta",
-                echo: "echo",
-                foxtrot: { golf: "golf" }
-              }
-            },
-            undefined,
-            3
-          );
+          expectResultsMatch(deepObject, undefined, 3);
+        });
+
+        it("should limit pad to 10 chars", () => {
+          expectResultsMatch(deepObject, undefined, 13);
         });
       });
     });
