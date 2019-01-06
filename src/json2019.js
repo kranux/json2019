@@ -59,8 +59,21 @@ function stringifyNumber(obj) {
   return Number.isFinite(obj.valueOf()) ? obj.toString() : "null";
 }
 
+const stringReplacements = {
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "\t": "\\t"
+};
+
 function stringifyString(str) {
-  return `"${str.toString()}"`;
+  const replaced = Object.keys(stringReplacements).reduce(
+    (acc, replacer) => acc.replace(replacer, stringReplacements[replacer]),
+    str.toString()
+  );
+
+  return `"${replaced}"`;
 }
 
 function stringifyBoolean(bool) {

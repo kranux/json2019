@@ -6,7 +6,19 @@ describe("json2019", () => {
   describe("#stringify()", () => {
     const arrayOfPrimitiveBooleans = [true, false];
 
-    const arrayOfPrimitiveStrings = ["", "a", "10", "true", "{}", " "];
+    const arrayOfPrimitiveStrings = [
+      " ",
+      "",
+      "{}",
+      "\b",
+      "\f",
+      "\n",
+      "\r",
+      "\t",
+      "10",
+      "a",
+      "true"
+    ];
 
     const arrayOfPrimitiveNumbers = [
       Number.MIN_VALUE,
